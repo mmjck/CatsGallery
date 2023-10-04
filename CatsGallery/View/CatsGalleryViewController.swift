@@ -35,8 +35,10 @@ class CatsGalleryViewController: UIViewController {
         super.viewDidLoad()
         self.view.backgroundColor = .white
         
-        setupLabel()
         setupNavigatorBar()
+        setupCollectionView()
+        setupLabel()
+     
     }
     
     
@@ -90,7 +92,8 @@ class CatsGalleryViewController: UIViewController {
                         print("parsing error \(error)")
                     }
                 }
-            } receiveValue: { _ in
+            } receiveValue: { [unowned self] _ in
+                print("Search was successful on tap")
                 DispatchQueue.main.async {
                     self.collectionView?.reloadData()
                 }
@@ -98,8 +101,6 @@ class CatsGalleryViewController: UIViewController {
         }
         
     }
-    
-    
 }
 
 extension CatsGalleryViewController {
@@ -142,10 +143,10 @@ extension CatsGalleryViewController {
         
         
         collectionView.register(ImageCell.self, forCellWithReuseIdentifier: ImageCell.identifier)
+        collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "id")
         collectionView.dataSource  = self
-        
-        
         self.view.addSubview(collectionView)
+        setupCollectionViewConstraints(collectionView)
     }
     
     private func setupUICollectionViewFlowLayout() -> UICollectionViewFlowLayout {
@@ -170,22 +171,19 @@ extension CatsGalleryViewController {
             collectionView.bottomAnchor.constraint(equalTo: view.bottomAnchor),
             collectionView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: Self.padding),
             collectionView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -Self.padding)
-            
-            
         ])
     }
 }
 
 extension CatsGalleryViewController: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return 1
-    }
-    
-    func numberOfSections(in collectionView: UICollectionView) -> Int {
         return self.viewModel.totalDisplay
     }
     
+    
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
+        
+        
         guard let cell = self.collectionView?.dequeueReusableCell(withReuseIdentifier: ImageCell.identifier, for: indexPath) as? ImageCell else {
             print("Could not instantiate ImageCell.")
             return UICollectionViewCell()
@@ -195,6 +193,7 @@ extension CatsGalleryViewController: UICollectionViewDataSource {
         if indexPath.row >= self.viewModel.imagesData.count {
             return collectionView.dequeueReusableCell(withReuseIdentifier: "id", for: indexPath)
         }
+        
         
         let imageData = viewModel.imagesData[indexPath.row]
         let catImage = UIImage(data: imageData)

@@ -16,7 +16,6 @@ class ImageCell: UICollectionViewCell {
         let iv = UIImageView()
         iv.contentMode = .scaleAspectFit
         iv.clipsToBounds = true
-        
         return iv
     }()
     
@@ -27,10 +26,10 @@ class ImageCell: UICollectionViewCell {
         
         
         self.backgroundColor = .white
-        
+        setupImage()
         setupShadowEffect()
         
-        self.layer.cornerRadius = 10
+        self.layer.cornerRadius = 5
         self.layer.shouldRasterize = true
         self.clipsToBounds = true
     }
@@ -54,10 +53,7 @@ class ImageCell: UICollectionViewCell {
         
         
         contentView.addSubview(imageView)
-        
-        
         imageView.translatesAutoresizingMaskIntoConstraints = false
-        
         NSLayoutConstraint.activate([
             imageView.topAnchor.constraint(equalTo: self.topAnchor, constant: padding),
             imageView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -padding),
