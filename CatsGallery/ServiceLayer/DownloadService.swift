@@ -17,12 +17,12 @@ class DownloadService: DownloadServiceProtocol {
     private let serviceLayer = GenericAPIService()
     
     func getImage(link: String?, completion: @escaping (Result<Data, NetWorkError>) -> Void) {
-        guard let link = link, let url = URL(from: link) else {
-            completion(.failure(NetWorkError.invalidURL))
-            return
-        }
+//        guard let link = link, let url = URL(from: link) else {
+//            completion(.failure(NetWorkError.invalidURL))
+//            return
+//        }
         
         
-        let _ = serviceLayer.requestDataTask(for: url, completion: completion)
+//        let _ = serviceLayer.requestDataTask(for: url, completion: completion)
     }
 }

@@ -14,7 +14,7 @@ protocol SearchServiceProtocol {
 }
 
 
-class SerchService: SearchServiceProtocol {
+class SearchService: SearchServiceProtocol {
     private let url: URL?
     private let serviceLayer = GenericAPIService()
     
