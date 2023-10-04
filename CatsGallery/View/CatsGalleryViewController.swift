@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Combine
 
 class CatsGalleryViewController: UIViewController {
     
@@ -15,7 +16,7 @@ class CatsGalleryViewController: UIViewController {
     private var collectionView: UICollectionView?
     private var cancelLabels = Set<AnyCancellable>()
     var viewModel = CatsGalleryViewModel()
-
+    
     
     
     private lazy var label: UILabel = {
@@ -30,15 +31,12 @@ class CatsGalleryViewController: UIViewController {
         return label
     }()
     
-    
-    
-    
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         self.view.backgroundColor = .white
         
+        setupLabel()
+        setupNavigatorBar()
     }
     
     
@@ -66,19 +64,70 @@ class CatsGalleryViewController: UIViewController {
     
     private func erase(){
         self.label.isHidden = true
-        //        self.viewModel.erase()
+        self.viewModel.erase()
         
         self.collectionView?.reloadData()
     }
     
-    private func downloadImages(){
+    private func downloadImages(onRange range: ClosedRange<Int>){
+        let downloads  = self.viewModel.downloadCatsImages(onRange: range)
+        
+        downloads.forEach {
+            $0.sink {
+                completion in
+                switch completion {
+                case .finished:
+                    break
+                case .failure(let error):
+                    switch error  {
+                    case .generic(error: let error):
+                        print("Generic error \(error)")
+                    case .invalidURL:
+                        print("invalid url Error")
+                    case .noData:
+                        print("No data error")
+                    case .parsingError(error: let error):
+                        print("parsing error \(error)")
+                    }
+                }
+            } receiveValue: { _ in
+                DispatchQueue.main.async {
+                    self.collectionView?.reloadData()
+                }
+            }.store(in: &cancelLabels)
+        }
         
     }
+    
+    
 }
 
 extension CatsGalleryViewController {
     @objc private func didTapRefreshButton(){
+        let searchResult = viewModel.searchCatsPosts(execute: { erase() })
         
+        searchResult.sink { completion in
+            switch completion {
+            case .finished:
+                break
+            case .failure(let error):
+                switch error {
+                case .generic(error: let error):
+                    print("Search - Generic error: \(error)")
+                case .invalidURL:
+                    print("Search - Invalid URL")
+                case .noData:
+                    print("Search - No data")
+                case .parsingError(error: let error):
+                    print("Search - Parsing error: \(error)")
+                }
+            }
+        } receiveValue: { [unowned self] _ in
+            print("Search was successful!")
+            if self.viewModel.hasLinks {
+                self.downloadImages(onRange: self.viewModel.initialRange)
+            }
+        }.store(in: &cancelLabels)
     }
 }
 
@@ -128,6 +177,10 @@ extension CatsGalleryViewController {
 }
 
 extension CatsGalleryViewController: UICollectionViewDataSource {
+    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        return 1
+    }
+    
     func numberOfSections(in collectionView: UICollectionView) -> Int {
         return self.viewModel.totalDisplay
     }
@@ -151,6 +204,25 @@ extension CatsGalleryViewController: UICollectionViewDataSource {
         return cell
     }
     
+}
+
+
+extension CatsGalleryViewController: UICollectionViewDataSourcePrefetching {
+    func collectionView(_ collectionView: UICollectionView, prefetchItemsAt indexPaths: [IndexPath]) {
+        print("Prefetching...")
+        let paths = indexPaths.sorted(by: { $0.row < $1.row } )
+        let filter = paths.filter { $0.row >= viewModel.totalDisplay - 1 }
+        if filter.isEmpty { return }
+        
+        viewModel.totalDisplay += 4
+        
+        let firstIndex = filter.first!.row
+        let lastIndex = filter.last!.row
+        downloadImages(onRange: firstIndex...lastIndex)
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, cancelPrefetchingForItemsAt indexPaths: [IndexPath]) {
+    }
 }
 
 

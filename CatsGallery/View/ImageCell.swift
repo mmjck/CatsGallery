@@ -58,10 +58,13 @@ class ImageCell: UICollectionViewCell {
         
         imageView.translatesAutoresizingMaskIntoConstraints = false
         
-        imageView.topAnchor.constraint(equalTo: self.topAnchor, constant: padding).isActive = true
-        imageView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -padding).isActive = true
-        imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: padding).isActive = true
-        imageView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -padding).isActive = true
+        NSLayoutConstraint.activate([
+            imageView.topAnchor.constraint(equalTo: self.topAnchor, constant: padding),
+            imageView.bottomAnchor.constraint(equalTo: self.bottomAnchor, constant: -padding),
+            imageView.leadingAnchor.constraint(equalTo: self.leadingAnchor, constant: padding),
+            imageView.trailingAnchor.constraint(equalTo: self.trailingAnchor, constant: -padding)
+        ])
+        
         
         imageView.layer.cornerRadius = 5.0
         imageView.layer.masksToBounds  = true
